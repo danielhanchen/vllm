@@ -40,7 +40,7 @@ client = OpenAI(
 )
 
 
-def predict(message, history):
+async def predict(message, history):
     # Convert chat history to OpenAI format
     history_openai_format = []
     for human, assistant in history:
@@ -97,6 +97,8 @@ scene = gr.ChatInterface(
     clear_btn = "Restart Entire Chat",
 )
 
-scene.launch(server_name=args.host,
-             server_port=args.port,
-             share=True)
+scene\
+    .queue(default_concurrency_limit = 50)\
+    .launch(server_name=args.host,
+            server_port=args.port,
+            share=True)
