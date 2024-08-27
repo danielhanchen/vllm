@@ -17,7 +17,7 @@ parser.add_argument('-m',
                     help='Model name for the chatbot')
 parser.add_argument('--temp',
                     type=float,
-                    default=0.8,
+                    default=1.5,
                     help='Temperature for text generation')
 parser.add_argument('--stop-token-ids',
                     type=str,
@@ -42,10 +42,7 @@ client = OpenAI(
 
 def predict(message, history):
     # Convert chat history to OpenAI format
-    history_openai_format = [{
-        "role": "system",
-        "content": "You are a great ai assistant."
-    }]
+    history_openai_format = []
     for human, assistant in history:
         history_openai_format.append({"role": "user", "content": human})
         history_openai_format.append({
@@ -66,7 +63,8 @@ def predict(message, history):
             'stop_token_ids': [
                 int(id.strip()) for id in args.stop_token_ids.split(',')
                 if id.strip()
-            ] if args.stop_token_ids else []
+            ] if args.stop_token_ids else [],
+            'min_p' : 0.1,
         })
 
     # Read and return generated text from response stream
@@ -76,7 +74,29 @@ def predict(message, history):
         yield partial_message
 
 
-# Create and launch a chat interface with Gradio
-gr.ChatInterface(predict).queue().launch(server_name=args.host,
-                                         server_port=args.port,
-                                         share=True)
+studio_theme = gr.themes.Soft(
+    primary_hue = "teal",
+)
+
+scene = gr.ChatInterface(
+    predict,
+    chatbot = gr.Chatbot(
+        height = 325,
+        label = "Unsloth Chat",
+    ),
+    textbox = gr.Textbox(
+        placeholder = "Type a message",
+        container = False,
+    ),
+    title = None,
+    theme = studio_theme,
+    examples = None,
+    cache_examples = False,
+    retry_btn = None,
+    undo_btn = "Remove Previous Message",
+    clear_btn = "Restart Entire Chat",
+)
+
+scene.launch(server_name=args.host,
+             server_port=args.port,
+             share=True)
