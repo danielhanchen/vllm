@@ -40,7 +40,7 @@ client = OpenAI(
 )
 
 
-async def predict(message, history):
+def predict(message, history):
     # Convert chat history to OpenAI format
     history_openai_format = []
     for human, assistant in history:
